@@ -31,6 +31,10 @@ LABEL maintainer="unclecode"
 LABEL description="🔥🕷️ Crawl4AI: Open-source LLM Friendly Web Crawler & scraper"
 LABEL version="1.0"
 
+RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+RUN pip config set global.index-url http://192.168.1.239:10608/simple && \
+    pip config set global.trusted-host 192.168.1.239
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
