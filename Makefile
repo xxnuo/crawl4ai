@@ -1,3 +1,5 @@
+# registry.lazycat.cloud/x/lzc-crawl4ai:355978e
+
 VERSION := $(shell git rev-parse --short HEAD)
 UV := ~/.local/bin/uv
 CURL := $(shell if command -v axel >/dev/null 2>&1; then echo "axel"; else echo "curl"; fi)
