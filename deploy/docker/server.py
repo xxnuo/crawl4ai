@@ -163,6 +163,19 @@ if config["observability"]["prometheus"]["enabled"]:
 
 token_dep = get_token_dependency(config)
 
+@app.middleware("http")
+async def process_proxy_headers(request: Request, call_next):
+
+    forwarded_proto = request.headers.get("X-Forwarded-Proto", "http")
+    forwarded_host = request.headers.get("X-Forwarded-Host")
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    
+    if forwarded_host:
+        base_url = f"{forwarded_proto}://{forwarded_host}"
+        request.state.base_url = base_url
+    
+    response = await call_next(request)
+    return response
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
