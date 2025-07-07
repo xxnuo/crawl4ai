@@ -45,4 +45,28 @@ push: build
 		docker push $(DOCKER_REGISTRY):$(VERSION) && \
 		docker push $(DOCKER_REGISTRY):latest"
 
-.PHONY: build test inspect push
+build-amd:
+	docker build \
+	    -f Dockerfile \
+	    -t $(DOCKER_REGISTRY)-amd:$(VERSION) \
+	    -t $(DOCKER_REGISTRY)-amd:latest \
+        --network host \
+		--build-arg INSTALL_TYPE=default \
+  		--build-arg ENABLE_GPU=false \
+		--build-arg TARGETARCH=amd64 \
+        --build-arg "HTTP_PROXY=$(ENV_PROXY)" \
+        --build-arg "HTTPS_PROXY=$(ENV_PROXY)" \
+        --build-arg "NO_PROXY=localhost,192.168.1.200,registry.lazycat.cloud" \
+		.
+
+test-amd: build-amd
+	docker run -it --rm --gpus all --shm-size=1g --name $(DOCKER_NAME) --network host -v ./output:/app/output $(DOCKER_REGISTRY)-amd:$(VERSION)
+
+inspect-amd: build-amd
+	docker run -it --rm --gpus all --shm-size=1g --name $(DOCKER_NAME) --network host -v ./output:/app/output $(DOCKER_REGISTRY)-amd:$(VERSION) bash
+
+push-amd: build-amd
+	docker push $(DOCKER_REGISTRY)-amd:$(VERSION) && \
+	docker push $(DOCKER_REGISTRY)-amd:latest
+
+.PHONY: build test inspect push build-amd test-amd inspect-amd push-amd
