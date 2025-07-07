@@ -31,6 +31,8 @@ LABEL maintainer="unclecode"
 LABEL description="🔥🕷️ Crawl4AI: Open-source LLM Friendly Web Crawler & scraper"
 LABEL version="1.0"
 
+RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -110,14 +112,14 @@ WORKDIR ${APP_HOME}
 RUN echo '#!/bin/bash\n\
 if [ "$USE_LOCAL" = "true" ]; then\n\
     echo "📦 Installing from local source..."\n\
-    pip install --no-cache-dir /tmp/project/\n\
+    pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 --no-cache-dir /tmp/project/\n\
 else\n\
     echo "🌐 Installing from GitHub..."\n\
     for i in {1..3}; do \n\
         git clone --branch ${GITHUB_BRANCH} ${GITHUB_REPO} /tmp/crawl4ai && break || \n\
         { echo "Attempt $i/3 failed! Taking a short break... ☕"; sleep 5; }; \n\
     done\n\
-    pip install --no-cache-dir /tmp/crawl4ai\n\
+    pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 --no-cache-dir /tmp/crawl4ai\n\
 fi' > /tmp/install.sh && chmod +x /tmp/install.sh
 
 COPY . /tmp/project/
@@ -126,10 +128,10 @@ COPY . /tmp/project/
 COPY deploy/docker/supervisord.conf .
 
 COPY deploy/docker/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 --no-cache-dir -r requirements.txt
 
 RUN if [ "$INSTALL_TYPE" = "all" ] ; then \
-        pip install --no-cache-dir \
+        pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 --no-cache-dir \
             torch \
             torchvision \
             torchaudio \
@@ -141,18 +143,18 @@ RUN if [ "$INSTALL_TYPE" = "all" ] ; then \
     fi
 
 RUN if [ "$INSTALL_TYPE" = "all" ] ; then \
-        pip install "/tmp/project/[all]" && \
+        pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 "/tmp/project/[all]" && \
         python -m crawl4ai.model_loader ; \
     elif [ "$INSTALL_TYPE" = "torch" ] ; then \
-        pip install "/tmp/project/[torch]" ; \
+        pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 "/tmp/project/[torch]" ; \
     elif [ "$INSTALL_TYPE" = "transformer" ] ; then \
-        pip install "/tmp/project/[transformer]" && \
+        pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 "/tmp/project/[transformer]" && \
         python -m crawl4ai.model_loader ; \
     else \
-        pip install "/tmp/project" ; \
+        pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 "/tmp/project" ; \
     fi
 
-RUN pip install --no-cache-dir --upgrade pip && \
+RUN pip install --index http://192.168.1.239:10608/simple --trusted-host 192.168.1.239 --no-cache-dir --upgrade pip && \
     /tmp/install.sh && \
     python -c "import crawl4ai; print('✅ crawl4ai is ready to rock!')" && \
     python -c "from playwright.sync_api import sync_playwright; print('✅ Playwright is feeling dramatic!')"
