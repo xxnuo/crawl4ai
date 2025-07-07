@@ -17,7 +17,7 @@ sync-to-gpu:
 sync-clean:
 	ssh -t $(REMOTE) "rm -rf $(REMOTE_PATH)"
 
-build:
+build: sync-to-gpu
 	ssh -t $(REMOTE) "cd $(REMOTE_PATH) && \
 		docker build \
 	    -f Dockerfile \
